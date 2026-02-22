@@ -1,0 +1,31 @@
+from models.base import Base
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
+
+
+class orders(Base):
+    __tablename__ = "orders"
+    id = Column(Integer, primary_key=True, index=True)
+    table_number = Column(Integer)
+    seat_number = Column(Integer)
+    name = Column(String)
+    order_items = relationship("order_items", back_populates="orders")
+    oi_recent = relationship("oi_recent", back_populates="orders")
+
+
+class order_items(Base):
+    __tablename__ = "order_items"
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    item_id = Column(Integer, ForeignKey("items.id"))
+
+    orders = relationship("orders", back_populates="order_items")
+    items = relationship("items", back_populates="order_items")
+
+
+class oi_recent(Base):
+    __tablename__ = "order_items_recent"
+    order_id = Column(Integer, ForeignKey("orders.id"), primary_key=True, index=True)
+    tottel_price = Column(Integer)
+    status = Column(String(20))
+    orders = relationship("orders", back_populates="oi_recent")

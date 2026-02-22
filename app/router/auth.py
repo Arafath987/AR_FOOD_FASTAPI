@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from models import oi_recent, order_items
+from app.models.orders import oi_recent, order_items
 from typing import Annotated
-from database import sessionlocal
+from app.database import sessionlocal
 from sqlalchemy.orm import Session, joinedload
 from starlette import status
 
@@ -63,7 +63,9 @@ def order_items_recent(db: db_dependency, order_id):
     db.commit()
 
 
-@router.delete("/order_item_recent/delete/{order_id}")
+@router.delete(
+    "/order_item_recent/delete/{order_id}", status_code=status.HTTP_204_NO_CONTENT
+)
 def order_item_recent(order_id, db: db_dependency):
     db.query(oi_recent).filter(oi_recent.order_id == order_id).delete()
     db.commit()
