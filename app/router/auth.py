@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 from starlette import status
 
 
-router = APIRouter(prefix="/auth", tags=["aut"])
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 def get_db():

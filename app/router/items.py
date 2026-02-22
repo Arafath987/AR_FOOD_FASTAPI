@@ -4,9 +4,7 @@ from sqlalchemy.orm import Session, joinedload
 from starlette import status
 from app.database import sessionlocal
 from app.models.items import items, category
-from app.models.orders import orders, order_items
 from app.schemas.items import CategoryBase, ItemBase
-from app.schemas.orders import OrderBase, OrderItemBase
 
 router = APIRouter(prefix="/items", tags=["Items"])
 
