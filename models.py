@@ -3,6 +3,17 @@ from sqlalchemy import Column, Integer, Boolean, LargeBinary, String, ForeignKey
 from sqlalchemy.orm import relationship
 
 
+class Users(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True)
+    email = Column(String, unique=True)
+    designation = Column(String)
+    phone_number = Column(String, unique=True)
+    hashed_password = Column(String)
+
+
 class items(Base):
     __tablename__ = "items"
     id = Column(Integer, primary_key=True, index=True)
