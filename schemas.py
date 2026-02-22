@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
+from typing import Literal
 
 
 class CategoryBase(BaseModel):
@@ -41,10 +42,43 @@ class order_item_base(BaseModel):
     order_id: int = Field(gt=0)
     item_id: int = Field(gt=0)
     model_config = {"json_schema_extra": {"example": {"order_id": 1, "item_id": 1}}}
-    
 
 
-class order_item_recent(BaseModel):
-    order_id:int
-    
-    
+class order_item_recent_base(BaseModel):
+    order_id: int = Field(gt=0, description="Order ID must be a positive integer")
+
+    total_price: int = Field(gt=0, description="Total price must be greater than 0")
+
+    status: Literal["pending", "paid", "shipped", "cancelled"]
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {"order_id": 1, "total_price": 2500, "status": "paid"}
+        }
+    }
+
+
+class user(BaseModel):
+    id: int = Field(gt=0)
+
+    username: str = Field(min_length=3, max_length=20, regex=r"^[a-zA-Z0-9_]+$")
+
+    email: EmailStr
+
+    designation: str = Field(min_length=5, max_length=20)
+
+    phone_number: str = Field(regex=r"^[6-9]\d{9}$")
+
+    password: str = Field(min_length=8, max_length=100)
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "id": 1,
+                "username": "yaser_dev",
+                "email": "yaser@gmail.com",
+                "designation": "Backend Dev",
+                "phone_number": "9876543210",
+                "hashed_password": "StrongPass1",
+            }
+        }
+    }
