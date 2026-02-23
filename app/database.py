@@ -6,3 +6,11 @@ engine = create_engine(SQL_DATABASE_URL)
 
 
 sessionlocal = sessionmaker(autoflush=False, bind=engine)
+
+
+def get_db():
+    db = sessionlocal()
+    try:
+        yield db
+    finally:
+        db.close()

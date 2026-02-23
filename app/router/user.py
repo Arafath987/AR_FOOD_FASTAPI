@@ -5,23 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import Annotated
 from sqlalchemy.orm import Session
 from starlette import status
-from app.database import sessionlocal
 from typing import List
 from passlib.context import CryptContext
+from app.database import get_db
 
 router = APIRouter(prefix="/User", tags=["User"])
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-# ----------DB Dependency-----------
-
-
-def get_db():
-    db = sessionlocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 db_dependency = Annotated[Session, Depends(get_db)]
 
 

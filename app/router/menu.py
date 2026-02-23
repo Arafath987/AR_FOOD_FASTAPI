@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Path, HTTPException
 from typing import Annotated
 from sqlalchemy.orm import Session, joinedload
 from starlette import status
-from app.database import sessionlocal
+from app.database import get_db
 from app.models.items import items, category
 from app.models.orders import orders, order_items
 from app.schemas.items import CategoryBase, ItemBase
@@ -12,15 +12,6 @@ router = APIRouter(prefix="/menu", tags=["Menu"])
 
 
 # --------------------DB Dependency--------------------
-
-
-def get_db():
-    db = sessionlocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 db_dependency = Annotated[Session, Depends(get_db)]
 

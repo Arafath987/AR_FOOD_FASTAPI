@@ -2,23 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import Annotated
 from sqlalchemy.orm import Session, joinedload
 from starlette import status
-from app.database import sessionlocal
+from app.database import get_db
 from app.models.items import items
 from app.models.orders import orders, order_items
 from app.schemas.orders import OrderBase, OrderItemBase
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
-
-
-# --------------------DB Dependenc --------------------
-
-
-def get_db():
-    db = sessionlocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 db_dependency = Annotated[Session, Depends(get_db)]
