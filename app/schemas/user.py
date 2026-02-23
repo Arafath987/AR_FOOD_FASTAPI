@@ -31,3 +31,13 @@ class UserBase(BaseModel):
             }
         }
     }
+
+
+class UserResponse(BaseModel):
+    username: str
+    email: str
+    designation: str
+    phone_number: str
+
+    class Config:
+        from_attributes = True  # (or orm_mode = True in older FastAPI)

@@ -4,11 +4,15 @@ from typing import Annotated
 from app.database import sessionlocal
 from sqlalchemy.orm import Session, joinedload
 from starlette import status
+from fastapi.security import OAuth2PasswordRequestForm
+from app.models.user import Users
+from .user import bcrypt_context
 
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
+# ----------------- DB Dependenc ---------------------
 def get_db():
     db = sessionlocal()
     try:
@@ -20,15 +24,26 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
-@router.get("/")
-def auth():
-    result = []  # normel technique
-    for i in range(0, 5 + 1):
-        result.append(i * 2)
+def authenticate_user(username: str, password: str, db: db_dependency):
+    user = db.query(Users).filter(username == Users.username).first()
+    if not user:
+        return False
+    if not bcrypt_context.verify(password, user.hashed_password):
+        return False
+    return True
 
-    result_lc = [i * 2 for i in range(2, 5)]  # list comprehense technique
 
-    return {"auth": "successful", "result": result, "result_lc": result_lc}
+# ------------------- Api -------------
+
+
+@router.post("/token", status_code=status.HTTP_201_CREATED)
+async def login_for_acess_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency
+):
+    user = authenticate_user(form_data.username, form_data.password, db)
+    if not user:
+        return "authentication failed"
+    return "authentication successfull"
 
 
 @router.get("/order_item_recent/view")
