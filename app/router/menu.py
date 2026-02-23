@@ -11,7 +11,7 @@ from app.schemas.orders import OrderBase, OrderItemBase
 router = APIRouter(prefix="/menu", tags=["Menu"])
 
 
-# -------------------- DB Dependency --------------------
+# --------------------DB Dependency--------------------
 
 
 def get_db():
@@ -25,7 +25,7 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
-# -------------------- Category APIs --------------------
+# -------------------- Category API --------------------
 
 
 @router.get("/categories", status_code=status.HTTP_200_OK)
@@ -49,7 +49,7 @@ def create_category(db: db_dependency, request: CategoryBase):
     return new_category
 
 
-# -------------------- Item APIs --------------------
+# --------------------Item API--------------------
 
 
 @router.get("/items", status_code=status.HTTP_200_OK)
@@ -99,7 +99,7 @@ def create_item(
     return new_item
 
 
-# -------------------- Order APIs --------------------
+# -------------------- Order API--------------------
 
 
 @router.get("/orders", status_code=status.HTTP_200_OK)
@@ -116,7 +116,7 @@ def create_order(db: db_dependency, request: OrderBase):
     return new_order
 
 
-# -------------------- Order Item APIs --------------------
+# -------------------- Order Item API--------------------
 
 
 @router.get("/order-items", status_code=status.HTTP_200_OK)

@@ -10,7 +10,7 @@ from app.schemas.orders import OrderBase, OrderItemBase
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
 
-# -------------------- DB Dependency --------------------
+# --------------------DB Dependenc --------------------
 
 
 def get_db():
@@ -24,7 +24,7 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
-# -------------------- Order APIs --------------------
+# -------------------- Order API--------------------
 
 
 @router.get("/orders", status_code=status.HTTP_200_OK)
@@ -41,7 +41,7 @@ def create_order(db: db_dependency, request: OrderBase):
     return new_order
 
 
-# -------------------- Order Item APIs --------------------
+# -------------------- Order Item API --------------------
 
 
 @router.get("/order-items", status_code=status.HTTP_200_OK)
