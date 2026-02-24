@@ -6,12 +6,13 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from starlette import status
 from typing import List
-from passlib.context import CryptContext
 from app.database import get_db
+from .dependecies import get_current_user, bcrypt_context
+
 
 router = APIRouter(prefix="/User", tags=["User"])
-bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 db_dependency = Annotated[Session, Depends(get_db)]
+user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 # ------------API----------
@@ -81,7 +82,12 @@ async def update_user(
     username: str,
     db: db_dependency,
     update_user_request: UserBase,
+    user: user_dependency,
 ):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
     user = db.query(Users).filter(Users.username == username).first()
 
     if not user:

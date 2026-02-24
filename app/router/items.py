@@ -5,14 +5,13 @@ from starlette import status
 from app.database import get_db
 from app.models.items import items, category
 from app.schemas.items import CategoryBase, ItemBase
+from .dependecies import get_current_user
 
 router = APIRouter(prefix="/items", tags=["Items"])
 
 
-# -------------------- DB Dependency --------------------
-
-
 db_dependency = Annotated[Session, Depends(get_db)]
+user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 # --------------------Category API--------------------
@@ -24,7 +23,11 @@ def get_all_categories(db: db_dependency):
 
 
 @router.post("/categories", status_code=status.HTTP_201_CREATED)
-def create_category(db: db_dependency, request: CategoryBase):
+def create_category(db: db_dependency, request: CategoryBase, user: user_dependency):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
     existing_category = (
         db.query(category).filter(category.category == request.category).first()
     )
@@ -72,6 +75,7 @@ def get_items_by_category(db: db_dependency, category_name: str):
 @router.post("/items/{category_name}", status_code=status.HTTP_201_CREATED)
 def create_item(
     db: db_dependency,
+    user: user_dependency,
     request: ItemBase,
     category_name: str = Path(min_length=4, max_length=10),
 ):
