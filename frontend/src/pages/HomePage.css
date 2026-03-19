@@ -7,30 +7,59 @@
 .home-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 20px;
+  padding: 12px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  sticky: top;
+  position: sticky;
   top: 0;
   z-index: 100;
+  min-height: 60px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.restaurant-icon {
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .home-header h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: 24px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .cart-icon {
   background: white;
   color: #667eea;
-  padding: 10px 20px;
+  padding: 8px 12px;
   border-radius: 20px;
   text-decoration: none;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 14px;
   transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.cart-icon-emoji {
+  font-size: 18px;
+}
+
+.cart-count {
+  font-size: 14px;
 }
 
 .cart-icon:hover {
@@ -96,7 +125,7 @@
 
 .items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   padding: 20px;
   max-width: 1400px;
@@ -191,22 +220,181 @@
 }
 
 @media (max-width: 768px) {
+  .home-page {
+    padding-bottom: 20px;
+  }
+
   .home-header {
-    flex-direction: column;
-    gap: 15px;
+    padding: 10px 12px;
+    min-height: 56px;
   }
 
-  .items-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    padding: 15px;
+  .header-left {
+    gap: 8px;
   }
 
-  .item-image {
-    height: 150px;
+  .restaurant-icon {
+    font-size: 28px;
+  }
+
+  .home-header h1 {
+    font-size: 18px;
+  }
+
+  .cart-icon {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .cart-icon-emoji {
+    font-size: 16px;
+  }
+
+  .cart-count {
+    font-size: 12px;
+  }
+
+  .search-section {
+    padding: 12px;
+    margin: 0;
+  }
+
+  .search-bar {
+    padding: 10px 14px;
+    font-size: 14px;
   }
 
   .categories-section {
-    padding: 15px;
+    padding: 12px;
+    margin: 8px;
+    gap: 8px;
+  }
+
+  .category-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .items-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 12px;
+    max-width: 100%;
+  }
+
+  .item-card {
+    border-radius: 8px;
+  }
+
+  .item-image {
+    height: 120px;
+  }
+
+  .item-info {
+    padding: 12px;
+  }
+
+  .item-info h3 {
+    font-size: 14px;
+    margin: 0 0 6px 0;
+  }
+
+  .item-desc {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .price {
+    font-size: 16px;
+  }
+
+  .rating {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-header {
+    padding: 8px 10px;
+    min-height: 52px;
+  }
+
+  .header-left {
+    gap: 6px;
+  }
+
+  .restaurant-icon {
+    font-size: 24px;
+  }
+
+  .home-header h1 {
+    font-size: 16px;
+  }
+
+  .cart-icon {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .cart-icon-emoji {
+    font-size: 14px;
+  }
+
+  .items-grid {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .search-section {
+    padding: 10px;
+  }
+
+  .search-bar {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .categories-section {
+    padding: 10px;
+    margin: 6px;
+    gap: 6px;
+  }
+
+  .category-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .item-image {
+    height: 100px;
+  }
+
+  .item-info {
+    padding: 10px;
+  }
+
+  .item-info h3 {
+    font-size: 13px;
+    margin: 0 0 4px 0;
+  }
+
+  .item-desc {
+    font-size: 11px;
+    margin-bottom: 6px;
+    -webkit-line-clamp: 1;
+  }
+
+  .price {
+    font-size: 14px;
+  }
+
+  .no-items {
+    padding: 40px 15px;
+  }
+
+  .loading {
+    padding: 40px 15px;
+    font-size: 14px;
   }
 }

@@ -48,9 +48,13 @@ function HomePage() {
   return (
     <div className="home-page">
       <header className="home-header">
-        <h1>ArFood Restaurant</h1>
+        <div className="header-left">
+          <span className="restaurant-icon">🍽️</span>
+          <h1>ArFood</h1>
+        </div>
         <a href="/cart" className="cart-icon">
-          🛒 Cart ({getTotalItems()})
+          <span className="cart-icon-emoji">🛒</span>
+          <span className="cart-count">({getTotalItems()})</span>
         </a>
       </header>
 

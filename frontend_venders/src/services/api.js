@@ -12,7 +12,7 @@ const api = axios.create({
 // Add request interceptor to include token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('vendor_access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -37,39 +37,35 @@ export const authAPI = {
   },
 };
 
-// User APIs
+// User APIs - Get vendor data from backend user router
 export const userAPI = {
   createUser: (userData) => api.post('/User/create_user', userData),
   getUsers: () => api.get('/User/view_user'),
+  getUser: (username) => api.get(`/User/view_user?username=${username}`),
   updateUser: (username, userData) => api.put(`/User/update_user/${username}`, userData),
   deleteUser: (username) => api.delete(`/User/delete_user/${username}`),
+  getCurrentUser: async (username) => {
+    // Get all users and find current user
+    const response = await api.get('/User/view_user');
+    const currentUser = response.data.find(user => user.username === username);
+    return { data: currentUser };
+  },
 };
 
 // Items APIs
 export const itemsAPI = {
   getAllItems: () => api.get('/items/items'),
-  getItemsWithCategory: () => api.get('/items/items/with-category'),
-  getItemsByCategory: (categoryName) => api.get(`/items/items/by-category/${categoryName}`),
-  createItem: (categoryName, itemData) => api.post(`/items/items/${categoryName}`, itemData),
-  getAllCategories: () => api.get('/items/categories'),
-  createCategory: (categoryData) => api.post('/items/categories', categoryData),
+  getItemById: (id) => api.get(`/items/items/${id}`),
+  createItem: (itemData) => api.post('/items/items', itemData),
+  updateItem: (id, itemData) => api.put(`/items/items/${id}`, itemData),
+  deleteItem: (id) => api.delete(`/items/items/${id}`),
 };
 
-// Orders APIs
-export const ordersAPI = {
-  getAllOrders: () => api.get('/orders/orders'),
-  createOrder: (orderData) => api.post('/orders/orders', orderData),
-  getAllOrderItems: () => api.get('/orders/order-items'),
-  getOrderItemsByOrderId: (orderId) => api.get(`/orders/order-items/${orderId}`),
-  createOrderItem: (orderItemData) => api.post('/orders/order-items', orderItemData),
-};
-
-// Order Items Recent APIs
+// Order Recent APIs
 export const orderRecentAPI = {
   getRecentOrders: () => api.get('/order_item_recent/order_item_recent/view'),
-  createRecentOrder: (orderId) => api.post(`/order_item_recent/order_items_recent/create/${orderId}`),
-  deleteRecentOrder: (orderId) => api.delete(`/order_item_recent/order_item_recent/delete/${orderId}`),
-  deleteAllRecentOrders: () => api.delete('/order_item_recent/order_item_recent'),
+  getOrderById: (orderId) => api.get(`/order_item_recent/order_item_recent/view/${orderId}`),
+  createOrderRecent: (orderData) => api.post('/order_item_recent/create', orderData),
+  updateOrderStatus: (orderId, status) => 
+    api.put(`/order_item_recent/update-status/${orderId}`, { status }),
 };
-
-export default api;

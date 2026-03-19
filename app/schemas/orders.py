@@ -10,10 +10,16 @@ class OrderBase(BaseModel):
     name: str = Field(
         min_length=4, max_length=20, description="Customer name (4 to 20 characters)"
     )
+    total_price: int = Field(default=0, ge=0, description="Total price of the order")
 
     model_config = {
         "json_schema_extra": {
-            "example": {"table_number": 1, "seat_number": 2, "name": "Yaser"}
+            "example": {
+                "table_number": 1,
+                "seat_number": 2,
+                "name": "Yaser",
+                "total_price": 2500,
+            }
         }
     }
 
@@ -32,11 +38,18 @@ class OrderItemBase(BaseModel):
 
 class OrderItemRecentBase(BaseModel):
     order_id: int = Field(gt=0, description="Order ID must be a positive integer")
-    total_price: int = Field(gt=0, description="Total price must be greater than 0")
-    status: Literal["pending", "paid", "shipped", "cancelled"]
+    tottel_price: int = Field(gt=0, description="Total price must be greater than 0")
+    status: Literal["new", "prepared", "delivered"] = "new"
 
     model_config = {
         "json_schema_extra": {
-            "example": {"order_id": 1, "total_price": 2500, "status": "paid"}
+            "example": {"order_id": 1, "tottel_price": 2500, "status": "new"}
         }
     }
+
+
+class OrderItemRecentResponse(OrderItemRecentBase):
+    id: int
+
+    class Config:
+        from_attributes = True

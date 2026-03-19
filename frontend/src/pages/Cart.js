@@ -26,11 +26,12 @@ function Cart() {
     setError('');
 
     try {
-      // Create order
+      // Create order with total_price
       const orderRes = await ordersAPI.createOrder({
         table_number: parseInt(orderData.table_number),
         seat_number: parseInt(orderData.seat_number),
         name: orderData.name,
+        total_price: Math.round(getTotalPrice()),
       });
 
       const orderId = orderRes.data.id;

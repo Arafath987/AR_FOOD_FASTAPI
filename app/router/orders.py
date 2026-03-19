@@ -6,7 +6,7 @@ from sqlalchemy.orm import joinedload
 from starlette import status
 from app.database import get_db
 from app.models.items import items
-from app.models.orders import orders, order_items
+from app.models.orders import orders, order_items, oi_recent
 from app.schemas.orders import OrderBase, OrderItemBase
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
@@ -26,10 +26,24 @@ async def get_all_orders(db: db_dependency):
 
 @router.post("/orders", status_code=status.HTTP_201_CREATED)
 async def create_order(db: db_dependency, request: OrderBase):
-    new_order = orders(**request.model_dump())
+    # Create order with all fields including total_price
+    new_order = orders(
+        table_number=request.table_number,
+        seat_number=request.seat_number,
+        name=request.name,
+        total_price=request.total_price,
+    )
     db.add(new_order)
     await db.commit()
     await db.refresh(new_order)
+
+    # Automatically create oi_recent with total_price from order
+    new_oi_recent = oi_recent(
+        order_id=new_order.id, tottel_price=request.total_price, status="new"
+    )
+    db.add(new_oi_recent)
+    await db.commit()
+
     return new_order
 
 

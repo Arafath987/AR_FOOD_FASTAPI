@@ -9,6 +9,7 @@ class orders(Base):
     table_number = Column(Integer)
     seat_number = Column(Integer)
     name = Column(String(100))
+    total_price = Column(Integer, default=0)
     order_items = relationship("order_items", back_populates="orders")
     oi_recent = relationship("oi_recent", back_populates="orders")
 
@@ -26,7 +27,8 @@ class order_items(Base):
 
 class oi_recent(Base):
     __tablename__ = "order_items_recent"
-    order_id = Column(Integer, ForeignKey("orders.id"), primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), index=True)
     tottel_price = Column(Integer)
-    status = Column(String(20))
+    status = Column(String(20), default="new")
     orders = relationship("orders", back_populates="oi_recent")
