@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Annotated
 from app.database import get_db
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from starlette import status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from app.models.user import Users
@@ -23,11 +24,12 @@ class Token(BaseModel):
     token_type: str
 
 
-db_dependency = Annotated[Session, Depends(get_db)]
+db_dependency = Annotated[AsyncSession, Depends(get_db)]
 
 
-def authenticate_user(username: str, password: str, db: db_dependency):
-    user = db.query(Users).filter(Users.username == username).first()
+async def authenticate_user(username: str, password: str, db: AsyncSession):
+    result = await db.execute(select(Users).filter(Users.username == username))
+    user = result.scalars().first()
     if not user:
         return False
     if not bcrypt_context.verify(password, user.hashed_password):
@@ -49,7 +51,7 @@ def create_access_token(username: str, user_id, expires_delta: timedelta):
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency
 ):
-    user = authenticate_user(form_data.username, form_data.password, db)
+    user = await authenticate_user(form_data.username, form_data.password, db)
 
     if not user:
         raise HTTPException(

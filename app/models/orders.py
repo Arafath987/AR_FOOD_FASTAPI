@@ -8,7 +8,7 @@ class orders(Base):
     id = Column(Integer, primary_key=True, index=True)
     table_number = Column(Integer)
     seat_number = Column(Integer)
-    name = Column(String)
+    name = Column(String(100))
     order_items = relationship("order_items", back_populates="orders")
     oi_recent = relationship("oi_recent", back_populates="orders")
 
@@ -18,6 +18,7 @@ class order_items(Base):
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id"))
     item_id = Column(Integer, ForeignKey("items.id"))
+    quantity = Column(Integer, default=1)
 
     orders = relationship("orders", back_populates="order_items")
     items = relationship("items", back_populates="order_items")

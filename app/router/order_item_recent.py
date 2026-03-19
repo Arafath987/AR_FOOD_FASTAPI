@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from app.database import get_db
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, delete
+from sqlalchemy.orm import joinedload
 from app.models.orders import oi_recent
 from typing import Annotated
 from starlette import status
@@ -10,37 +12,43 @@ from .dependecies import get_current_user
 
 
 router = APIRouter(prefix="/order_item_recent", tags=["Order Item Recent"])
-db_dependency = Annotated[Session, Depends(get_db)]
+db_dependency = Annotated[AsyncSession, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 @router.get("/order_item_recent/view")
-def order_item_recent_add(db: db_dependency, user: user_dependency):
+async def order_item_recent_add(db: db_dependency, user: user_dependency):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
         )
-    return db.query(oi_recent).all()
+    result = await db.execute(select(oi_recent))
+    return result.scalars().all()
 
 
 @router.post(
     "/order_items_recent/create/{order_id}", status_code=status.HTTP_201_CREATED
 )
-def order_items_recent_put(db: db_dependency, order_id, user: user_dependency):
+async def order_items_recent_put(db: db_dependency, order_id, user: user_dependency):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
         )
-    oi_model = (
-        db.query(order_items)
+    result = await db.execute(
+        select(order_items)
         .options(joinedload(order_items.orders), joinedload(order_items.items))
         .filter(order_items.order_id == order_id)
-        .all()
     )
+    oi_model = result.scalars().all()
+
     if not oi_model:
         raise HTTPException(status_code=404, detail="not found items ")
+
     tottel_price = sum(oi.items.price for oi in oi_model)
-    existing_order = db.query(oi_recent).filter(oi_recent.order_id == order_id).first()
+
+    result = await db.execute(select(oi_recent).filter(oi_recent.order_id == order_id))
+    existing_order = result.scalars().first()
+
     if existing_order:
         raise HTTPException(status_code=409, detail="Order ID already exists")
 
@@ -51,26 +59,26 @@ def order_items_recent_put(db: db_dependency, order_id, user: user_dependency):
     }
     recent_items_model = oi_recent(**recent_items)
     db.add(recent_items_model)
-    db.commit()
+    await db.commit()
 
 
 @router.delete(
     "/order_item_recent/delete/{order_id}", status_code=status.HTTP_204_NO_CONTENT
 )
-def order_item_recent_delete(order_id, db: db_dependency, user: user_dependency):
+async def order_item_recent_delete(order_id, db: db_dependency, user: user_dependency):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
         )
-    db.query(oi_recent).filter(oi_recent.order_id == order_id).delete()
-    db.commit()
+    await db.execute(delete(oi_recent).where(oi_recent.order_id == order_id))
+    await db.commit()
 
 
 @router.delete("/order_item_recent", status_code=status.HTTP_204_NO_CONTENT)
-def order_item_recent(db: db_dependency, user: user_dependency):
+async def order_item_recent(db: db_dependency, user: user_dependency):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
         )
-    db.query(oi_recent).delete()
-    db.commit()
+    await db.execute(delete(oi_recent))
+    await db.commit()

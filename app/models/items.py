@@ -6,8 +6,8 @@ from sqlalchemy.orm import relationship
 class items(Base):
     __tablename__ = "items"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    description = Column(String)
+    name = Column(String(255))
+    description = Column(String(500))
     rating = Column(Integer)
     price = Column(Integer)
     category_id = Column(Integer, ForeignKey("category.id"))
@@ -20,6 +20,6 @@ class items(Base):
 class category(Base):
     __tablename__ = "category"
     id = Column(Integer, primary_key=True, index=True)
-    category = Column(String)
+    category = Column(String(100))
 
     items = relationship("items", back_populates="category")  # Add reverse relationship

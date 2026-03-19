@@ -2,16 +2,16 @@ from sqlalchemy.exc import IntegrityError
 from app.models.user import Users
 from app.schemas.user import UserBase, UserResponse
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Annotated
-from sqlalchemy.orm import Session
+from typing import Annotated, List
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from starlette import status
-from typing import List
 from app.database import get_db
 from .dependecies import get_current_user, bcrypt_context
 
 
 router = APIRouter(prefix="/User", tags=["User"])
-db_dependency = Annotated[Session, Depends(get_db)]
+db_dependency = Annotated[AsyncSession, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
@@ -32,18 +32,19 @@ async def create_user(db: db_dependency, create_user_request: UserBase):
     )
     try:
         db.add(create_user_model)
-        db.commit()
+        await db.commit()
+        await db.refresh(create_user_model)
         return create_user_model
 
     except IntegrityError:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Username or email or phone number already exists",
         )
 
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server erro",
@@ -54,22 +55,24 @@ async def create_user(db: db_dependency, create_user_request: UserBase):
     "/view_user", response_model=List[UserResponse], status_code=status.HTTP_200_OK
 )
 async def view_user(db: db_dependency):
-    users = db.query(Users).all()
+    result = await db.execute(select(Users))
+    users = result.scalars().all()
     return users
 
 
 @router.delete("/delete_user/{username}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(username: str, db: db_dependency):
-    user = db.query(Users).filter(Users.username == username).first()
+    result = await db.execute(select(Users).filter(Users.username == username))
+    user = result.scalars().first()
 
     if not user:
         raise HTTPException(status_code=404, detail="Username not found")
 
     try:
         db.delete(user)
-        db.commit()
+        await db.commit()
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -88,7 +91,8 @@ async def update_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
         )
-    user = db.query(Users).filter(Users.username == username).first()
+    result = await db.execute(select(Users).filter(Users.username == username))
+    user = result.scalars().first()
 
     if not user:
         raise HTTPException(status_code=404, detail="Username not found")
@@ -100,19 +104,19 @@ async def update_user(
     user.hashed_password = bcrypt_context.hash(update_user_request.password)
 
     try:
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
         return user
 
     except IntegrityError:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Username or email or phone number already exists",
         )
 
     except Exception:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error",

@@ -21,8 +21,13 @@ class OrderBase(BaseModel):
 class OrderItemBase(BaseModel):
     order_id: int = Field(gt=0, description="Order ID must be a positive integer")
     item_id: int = Field(gt=0, description="Item ID must be a positive integer")
+    quantity: int = Field(
+        default=1, gt=0, description="Quantity must be a positive integer"
+    )
 
-    model_config = {"json_schema_extra": {"example": {"order_id": 1, "item_id": 2}}}
+    model_config = {
+        "json_schema_extra": {"example": {"order_id": 1, "item_id": 2, "quantity": 1}}
+    }
 
 
 class OrderItemRecentBase(BaseModel):

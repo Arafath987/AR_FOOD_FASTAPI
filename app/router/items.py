@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Path, HTTPException
 from typing import Annotated
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from starlette import status
 from app.database import get_db
 from app.models.items import items, category
@@ -10,7 +12,7 @@ from .dependecies import get_current_user
 router = APIRouter(prefix="/items", tags=["Items"])
 
 
-db_dependency = Annotated[Session, Depends(get_db)]
+db_dependency = Annotated[AsyncSession, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
@@ -18,27 +20,25 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 @router.get("/categories", status_code=status.HTTP_200_OK)
-def get_all_categories(db: db_dependency):
-    return db.query(category).all()
+async def get_all_categories(db: db_dependency):
+    result = await db.execute(select(category))
+    return result.scalars().all()
 
 
 @router.post("/categories", status_code=status.HTTP_201_CREATED)
-def create_category(db: db_dependency, request: CategoryBase, user: user_dependency):
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
-        )
-    existing_category = (
-        db.query(category).filter(category.category == request.category).first()
+async def create_category(db: db_dependency, request: CategoryBase):
+    result = await db.execute(
+        select(category).filter(category.category == request.category)
     )
+    existing_category = result.scalars().first()
 
     if existing_category:
         raise HTTPException(status_code=409, detail="Category already exists")
 
     new_category = category(**request.model_dump())
     db.add(new_category)
-    db.commit()
-    db.refresh(new_category)
+    await db.commit()
+    await db.refresh(new_category)
     return new_category
 
 
@@ -46,48 +46,51 @@ def create_category(db: db_dependency, request: CategoryBase, user: user_depende
 
 
 @router.get("/items", status_code=status.HTTP_200_OK)
-def get_all_items(db: db_dependency):
-    return db.query(items).all()
+async def get_all_items(db: db_dependency):
+    result = await db.execute(select(items))
+    return result.scalars().all()
 
 
 @router.get("/items/with-category", status_code=status.HTTP_200_OK)
-def get_items_with_category(db: db_dependency):
-    return db.query(items).options(joinedload(items.category)).all()
+async def get_items_with_category(db: db_dependency):
+    result = await db.execute(select(items).options(joinedload(items.category)))
+    return result.scalars().all()
 
 
 @router.get("/items/by-category/{category_name}", status_code=status.HTTP_200_OK)
-def get_items_by_category(db: db_dependency, category_name: str):
-    category_model = (
-        db.query(category).filter(category.category == category_name).first()
+async def get_items_by_category(db: db_dependency, category_name: str):
+    result = await db.execute(
+        select(category).filter(category.category == category_name)
     )
+    category_model = result.scalars().first()
 
     if not category_model:
         raise HTTPException(status_code=404, detail="Category not found")
 
-    return (
-        db.query(items)
+    result = await db.execute(
+        select(items)
         .options(joinedload(items.category))
         .filter(items.category_id == category_model.id)
-        .all()
     )
+    return result.scalars().all()
 
 
 @router.post("/items/{category_name}", status_code=status.HTTP_201_CREATED)
-def create_item(
+async def create_item(
     db: db_dependency,
-    user: user_dependency,
     request: ItemBase,
     category_name: str = Path(min_length=4, max_length=10),
 ):
-    category_model = (
-        db.query(category).filter(category.category == category_name).first()
+    result = await db.execute(
+        select(category).filter(category.category == category_name)
     )
+    category_model = result.scalars().first()
 
     if not category_model:
         raise HTTPException(status_code=404, detail="Category not found")
 
     new_item = items(**request.model_dump(), category_id=category_model.id)
     db.add(new_item)
-    db.commit()
-    db.refresh(new_item)
+    await db.commit()
+    await db.refresh(new_item)
     return new_item
